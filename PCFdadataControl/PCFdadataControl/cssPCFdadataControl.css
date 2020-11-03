@@ -1,0 +1,13 @@
+input {
+    width: 100%;
+    height: 25px;
+    padding: 6px 8px;
+    font: 400 13.3333px Arial;
+    border:hidden;
+}
+label {
+    width: 100%;
+    color: dimgray;
+    background-color: white;
+    text-align:left;
+}
