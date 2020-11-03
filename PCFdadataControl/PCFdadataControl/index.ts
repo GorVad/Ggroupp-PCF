@@ -17,7 +17,7 @@ import {IInputs, IOutputs} from "./generated/ManifestTypes";
         area_with_type?: any;
         area_type?: any;
         area_type_full?: any;
-        area?: any;
+        area?: any; 
         city_fias_id: string;
         city_kladr_id: string;
         city_with_type: string;
