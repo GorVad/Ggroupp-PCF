@@ -95,45 +95,27 @@ import {IInputs, IOutputs} from "./generated/ManifestTypes";
 
 
 export class PCFdadataControl implements ComponentFramework.StandardControl<IInputs, IOutputs> {
-	// Value of the field is stored and used inside the control
-	// Power Apps component framework framework delegate which will be assigned to this object which would be called whenever an update happens.
-	// input element that is used to create the range slider
     private _inputElement: HTMLInputElement;
     private _labelElement1: HTMLLabelElement;
     private _labelElement2: HTMLLabelElement;
     private _labelElement3: HTMLLabelElement;
-    private _button: HTMLButtonElement;
-    private _optionElement: HTMLOptionElement;
-	// reference to the control container HTMLDivElement
 	private eleMainContainer: HTMLDivElement;
-	// Event Handler 'refreshData' reference
     private _outputValue: string | null;
     private _value: string;
 	private _context: ComponentFramework.Context<IInputs>;
     private _container: HTMLDivElement;
     private _notifyOutputChanged: () => void;
     private _refreshData: EventListenerOrEventListenerObject;
-	/**
-	 * Empty constructor.
-	 */
+
 	constructor()
 	{
 
 	}
-
-	/**
-	 * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
-	 * Data-set values are not initialized here, use updateView.
-	 * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to property names defined in the manifest, as well as utility functions.
-	 * @param notifyOutputChanged A callback method to alert the framework that the control has new outputs ready to be retrieved asynchronously.
-	 * @param state A piece of data that persists in one session for a single user. Can be set at any point in a controls life cycle by calling 'setControlState' in the Mode interface.
-	 * @param container If a control is marked control-type='standard', it will receive an empty div element within which it can render its content.
-	 */
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement)
     {
-		// Add control initialization code
 		this._container = container;
-        this._context = context; this._notifyOutputChanged = notifyOutputChanged;
+        this._context = context;
+        this._notifyOutputChanged = notifyOutputChanged;
         this._refreshData = this.refreshData.bind(this);
 		context.mode.trackContainerResize(false);
         
@@ -142,13 +124,13 @@ export class PCFdadataControl implements ComponentFramework.StandardControl<IInp
 		this.eleMainContainer.id = "dadataInfo";
 		this.eleMainContainer.className = "dadataClass";
         this._inputElement = document.createElement("input");
-        this._inputElement.addEventListener("focusout", this._refreshData);
         this._inputElement.className = "inputClass";
         this._inputElement.type = "text";
         this._inputElement.placeholder = "Введите адрес";
         this._inputElement.id = "input";
         this._inputElement.value = context.parameters.sampleProperty.raw!;
         this._value = context.parameters.sampleProperty.raw!;
+        this.eleMainContainer.addEventListener("focusout", this._refreshData);
         this._inputElement.addEventListener("input", this._refreshData);
         this._inputElement.addEventListener("change", this._refreshData);
         var br = document.createElement("br");
@@ -176,7 +158,8 @@ export class PCFdadataControl implements ComponentFramework.StandardControl<IInp
         this._labelElement3.addEventListener("mouseleave", this._refreshData);
         var br3 = document.createElement("br");
         this._labelElement3.hidden = true;
-        
+
+
         this.eleMainContainer.appendChild(this._inputElement);
         this.eleMainContainer.appendChild(br);
         this.eleMainContainer.appendChild(this._labelElement1);
@@ -190,24 +173,37 @@ export class PCFdadataControl implements ComponentFramework.StandardControl<IInp
 
     public refreshData(evt: Event): void
     {
+        function hideLabel(){
+            if (document.activeElement != document.getElementById("input")) {
+                document.getElementById("1")!.style.display = "none";
+                document.getElementById("2")!.style.display = "none";
+                document.getElementById("3")!.style.display = "none";
+            }
+        }
+        
         if (evt.type == "input" || evt.type == "change")
         {
             this._value = this._inputElement.value;
             this._labelElement1.hidden = false;
             this._labelElement2.hidden = false;
             this._labelElement3.hidden = false;
+
+            this._labelElement1.style.display = "inline-block";
+            this._labelElement2.style.display = "inline-block";
+            this._labelElement3.style.display = "inline-block";
+
+            if (this._inputElement.value == "")
+            {
+                this._labelElement1.style.display = "none";
+                this._labelElement2.style.display = "none";
+                this._labelElement3.style.display = "none";
+            }
         }
         if (evt.type == "click")
         {
             let label = evt.target as HTMLLabelElement;
             this._inputElement.value = label.innerText;
             document.getElementById("input")!.focus();
-
-            if (this._inputElement.value == "") {
-                this._labelElement1.hidden = true;
-                this._labelElement2.hidden = true;
-                this._labelElement3.hidden = true;
-            }
         }
         if (evt.type == "mouseover")
         {
@@ -221,27 +217,15 @@ export class PCFdadataControl implements ComponentFramework.StandardControl<IInp
             label.style.backgroundColor = "white";
             label.style.color = "dimgray"
         }
-        //if (evt.type == "focusout")
-        //{
-        //    document.getElementById("1")!.remove();
-        //    document.getElementById("2")!.remove();
-        //    document.getElementById("3")!.remove();
-        //}
+        if (evt.type == "focusout") {
+            setTimeout(hideLabel, 100);
+        }
         this._notifyOutputChanged();
     }
 
-    //public putData(evt: Event): void {
-    //    let labelValue = evt.target as HTMLInputElement;
-    //    document.getElementById("input")!.innerText = "123";
-    //    this._notifyRefreshData();
-    //}
 
-	/**
-	 * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
-	 * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
-	 */
-
-    public updateView(context: ComponentFramework.Context<IInputs>): void {
+    public updateView(context: ComponentFramework.Context<IInputs>): void
+    {
         var url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
         var token = "4ca8954e3e3bdc1945c17f4979c1950b390bf569";
         var query = this._value;
@@ -273,30 +257,21 @@ export class PCFdadataControl implements ComponentFramework.StandardControl<IInp
             .then(response => response.text())
             .then(result => this._labelElement3.innerHTML = (JSON.parse(result) as IDadata).suggestions[2].value)
             .catch(error => console.log("error", error));
-
-
-
-        // Add code to update control view
     }
 
-	/** 
-	 * It is called by the framework prior to a control receiving new data. 
-	 * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as “bound” or “output”
-	 */
 	public getOutputs(): IOutputs
 	{
 		return {
-            sampleProperty: this._value
+            sampleProperty: this._inputElement.value
 		};
 	}
-
-	/** 
-	 * Called when the control is to be removed from the DOM tree. Controls should use this call for cleanup.
-	 * i.e. cancelling any pending remote calls, removing listeners, etc.
-	 */
 	public destroy(): void
 	{
         this._inputElement.removeEventListener("input", this._refreshData);
         this._inputElement.removeEventListener("click", this._refreshData);
+        this._inputElement.removeEventListener("mouseover", this._refreshData);
+        this._inputElement.removeEventListener("mouseleave", this._refreshData);
+        this._inputElement.removeEventListener("change", this._refreshData);
+        this._inputElement.removeEventListener("focusout", this._refreshData);
 	}
 }
