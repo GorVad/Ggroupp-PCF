@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\[OUT]QR_Code_Generator-master",
+    "\\[OUT]QR_Code_Generator-master\\QRCodeGenerator"
   ],
+  "SelectedNode": "\\[OUT]QR_Code_Generator-master\\QRCodeGenerator\\index.ts",
   "PreviewInSolutionExplorer": false
 }
